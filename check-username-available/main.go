@@ -12,7 +12,7 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	dsn := "postgresql://neondb_owner:I8T7DJHVgBil@ep-silent-rain-a12487j0.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+	dsn := ""
 	ctx := context.Background()
 
 	config, err := pgxpool.ParseConfig(dsn)
