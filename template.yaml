@@ -96,14 +96,14 @@ Outputs:
     Description: "Implicit IAM Role created for Custom Function"
     Value: !GetAtt SomeOtherFunctionRole.Arn
 
-    CheckUserNameFunctionAPI:
+  CheckUserNameFunctionAPI:
     Description: "API Gateway endpoint URL for Prod environment for SomeOtherFunction"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
   
   CheckUserNameFunctionArn:
     Description: "Custom Lambda Function ARN"
-    Value: !GetAtt SomeOtherFunction.Arn
+    Value: !GetAtt CheckUserNameFunction.Arn
   
   CheckUserNameFunctionIamRole:
     Description: "Implicit IAM Role created for Custom Function"
-    Value: !GetAtt SomeOtherFunctionRole.Arn
+    Value: !GetAtt CheckUserNameFunction.Arn
