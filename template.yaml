@@ -50,6 +50,25 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+  CheckUserNameFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: check-username-available/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /username-available
+            Method: POST
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -74,5 +93,17 @@ Outputs:
     Value: !GetAtt SomeOtherFunction.Arn
   
   CustomFunctionIamRole:
+    Description: "Implicit IAM Role created for Custom Function"
+    Value: !GetAtt SomeOtherFunctionRole.Arn
+
+    CheckUserNameFunctionAPI:
+    Description: "API Gateway endpoint URL for Prod environment for SomeOtherFunction"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
+  
+  CheckUserNameFunctionArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt SomeOtherFunction.Arn
+  
+  CheckUserNameFunctionIamRole:
     Description: "Implicit IAM Role created for Custom Function"
     Value: !GetAtt SomeOtherFunctionRole.Arn
