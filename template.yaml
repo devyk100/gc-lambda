@@ -93,6 +93,36 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+  CheckEmailFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: check-email-available/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        PostMethod:
+          Type: Api
+          Properties:
+            Path: /email-taken
+            Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /email-taken
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -127,6 +157,14 @@ Outputs:
   CheckUserNameFunctionArn:
     Description: "Custom Lambda Function ARN"
     Value: !GetAtt CheckUserNameFunction.Arn
+
+  CheckEmailFunctionAPI:
+    Description: "API Gateway endpoint URL for Prod environment for CheckEmailFunction"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/email-taken/"
+  
+  CheckEmailFunctionArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt CheckEmailFunction.Arn
   
   # CheckUserNameFunctionIamRole:
   #   Description: "Implicit IAM Role created for Custom Function"

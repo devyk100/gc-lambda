@@ -5,20 +5,20 @@ import (
 	"encoding/json"
 	"log"
 
-	db "gc.yashk.dev/checkusername/db_driver"
-	"gc.yashk.dev/checkusername/env"
+	db "gc.yashk.dev/checkemail/db_driver"
+	"gc.yashk.dev/checkemail/env"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type IsUsernameAvailable struct {
+type IsEmailTaken struct {
 	Success bool `json:"success"`
 }
 
-type UsernameCheckPayload struct {
-	Username string `json:"username"`
+type EmailCheckPayload struct {
+	Email string `json:"email"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -27,13 +27,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	dsn := env.DATABASE_URL
 
 	// unmarshalling the hjson from the request
-	var usernameCheckPayload UsernameCheckPayload
-	if err := json.Unmarshal([]byte(request.Body), &usernameCheckPayload); err != nil {
+	var EmailCheckPayload EmailCheckPayload
+	if err := json.Unmarshal([]byte(request.Body), &EmailCheckPayload); err != nil {
 		log.Println("Failed to unmarshal the JSON")
 	}
 
 	// pgx pool to connect to the db
-	var isUsernameAvailable IsUsernameAvailable
+	var IsEmailTaken IsEmailTaken
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
@@ -53,13 +53,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// the query client to run the queries
 	queries := db.New(pool)
 
-	_, err = queries.GetUserFromUsername(ctx, usernameCheckPayload.Username)
+	_, err = queries.GetUserFromEmail(ctx, EmailCheckPayload.Email)
 	//error handling for this case
 	if err != nil {
 		// no rows found in the sql query
 		if err == pgx.ErrNoRows {
-			isUsernameAvailable.Success = true
-			body, _ := json.Marshal(isUsernameAvailable)
+			IsEmailTaken.Success = false
+			body, _ := json.Marshal(IsEmailTaken)
 			return events.APIGatewayProxyResponse{
 				Body:       string(body),
 				StatusCode: 200,
@@ -85,8 +85,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}
 	} else {
 		// if a user was successfully found in this case
-		isUsernameAvailable.Success = false
-		body, _ := json.Marshal(isUsernameAvailable)
+		IsEmailTaken.Success = true
+		body, _ := json.Marshal(IsEmailTaken)
 		return events.APIGatewayProxyResponse{
 			Body:       string(body),
 			StatusCode: 200,
