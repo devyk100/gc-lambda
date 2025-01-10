@@ -1,1 +1,3 @@
 .aws-sam
+check-username-available/env/env.go
+.env

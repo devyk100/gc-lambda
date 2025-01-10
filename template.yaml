@@ -12,6 +12,16 @@ Globals:
     MemorySize: 128
 
 Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'POST,OPTIONS,GET'"
+        AllowHeaders: "'X-Forwaded-For,Content-Type'"
+        AllowOrigin: "'http://localhost:3000'"
+        MaxAge: "'600'"
+        AllowCredentials: true
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -28,6 +38,8 @@ Resources:
           Properties:
             Path: /hello
             Method: GET
+            RestApiId:
+              Ref: ApiGatewayApi
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
@@ -47,6 +59,8 @@ Resources:
           Properties:
             Path: /customfunction
             Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
@@ -61,11 +75,21 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        CatchAll:
+        PostMethod:
           Type: Api
           Properties:
             Path: /username-available
             Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /username-available
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
@@ -76,7 +100,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldAPI:
     Description: "API Gateway endpoint URL for Prod environment for First Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
   HelloWorldFunction:
     Description: "First Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
@@ -86,7 +110,7 @@ Outputs:
 
   CustomFunctionAPI:
     Description: "API Gateway endpoint URL for Prod environment for SomeOtherFunction"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/customfunction/"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/customfunction/"
   
   CustomFunctionArn:
     Description: "Custom Lambda Function ARN"
@@ -98,7 +122,7 @@ Outputs:
 
   CheckUserNameFunctionAPI:
     Description: "API Gateway endpoint URL for Prod environment for CheckUserNameFunction"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
   
   CheckUserNameFunctionArn:
     Description: "Custom Lambda Function ARN"
