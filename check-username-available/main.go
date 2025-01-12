@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
-	db "gc.yashk.dev/checkusername/db_driver"
-	"gc.yashk.dev/checkusername/env"
+	"gc.yashk.dev/db"
+	"gc.yashk.dev/env"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"

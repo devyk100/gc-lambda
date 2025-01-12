@@ -123,6 +123,36 @@ Resources:
         Variables:
           PARAM1: VALUE
 
+  GetPutImageUrl:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: get-put-image-url/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        GetMethod:
+          Type: Api
+          Properties:
+            Path: /get-put-image-url
+            Method: GET
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /get-put-image-url
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -165,6 +195,14 @@ Outputs:
   CheckEmailFunctionArn:
     Description: "Custom Lambda Function ARN"
     Value: !GetAtt CheckEmailFunction.Arn
+  
+  GetPutImageUrlAPI:
+    Description: "API Gateway endpoint URL for Prod environment for GetPutImageUrl"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get-put-image-url/"
+  
+  GetPutImageUrlArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt GetPutImageUrl.Arn
   
   # CheckUserNameFunctionIamRole:
   #   Description: "Implicit IAM Role created for Custom Function"
