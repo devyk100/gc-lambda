@@ -2,3 +2,4 @@
 check-username-available/env/env.go
 .env
 env/env.go
+env
