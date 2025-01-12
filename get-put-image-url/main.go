@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"gc.yashk.dev/getputimageurl/env"
+	"gc.yashk.dev/env"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
