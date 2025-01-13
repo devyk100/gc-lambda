@@ -7,4 +7,5 @@ use (
 	./env
 	./get-put-image-url
 	./middleware
+	./upload-image-from-url
 )
