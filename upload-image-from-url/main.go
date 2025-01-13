@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"gc.yashk.dev/env"
@@ -17,6 +19,7 @@ import (
 
 type UploadImageFromUrlRequest struct {
 	Token string `json:"token"`
+	Url   string `json:"url"`
 }
 
 type UploadImageFromUrlResponse struct {
@@ -53,11 +56,19 @@ func UploadFromUrlToS3(Url string) (string, error) {
 		Body:        bytes.NewReader(buf.Bytes()),
 		ContentType: aws.String(resp.Header.Get("Content-Type")),
 	})
+	if err != nil {
+		return "", err
+	}
 	return env.CLOUDFRONT_URL + filename.String(), nil
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	image_url := "https://farm3.staticflickr.com/2907/14066682001_88ce7553e4.jpg"
+	var uploadImageFromUrlRequest UploadImageFromUrlRequest
+	if err := json.Unmarshal([]byte(request.Body), &uploadImageFromUrlRequest); err != nil {
+		log.Println("Failed to unmarshal the JSON")
+	}
+
+	var uploadImageFromUrlResponse UploadImageFromUrlResponse
 	// var greeting string
 	// sourceIP := request.RequestContext.Identity.SourceIP
 
@@ -66,15 +77,18 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// } else {
 	// 	greeting = fmt.Sprintf("Hello, %s!\n", sourceIP)
 	// }
-	url, err := UploadFromUrlToS3(image_url)
+	url, err := UploadFromUrlToS3(uploadImageFromUrlRequest.Url)
+	uploadImageFromUrlResponse.Url = url
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
 		}, nil
 	}
+
+	body, _ := json.Marshal(uploadImageFromUrlResponse)
 	return events.APIGatewayProxyResponse{
-		Body:       url,
+		Body:       string(body),
 		StatusCode: 200,
 	}, nil
 }
