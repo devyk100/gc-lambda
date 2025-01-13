@@ -7,12 +7,10 @@ import (
 	"time"
 
 	"gc.yashk.dev/env"
+	"gc.yashk.dev/gc_middleware"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/awsdocs/aws-doc-sdk-examples/gov2/s3/actions"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -27,25 +25,14 @@ type PutImageUrlResponse struct {
 	FileName string `json:"filename"`
 }
 
-func Initialize(fileName string) (string, error) {
+func GetSignedPutUrl(fileName string) (string, error) {
 	// unsure of the context here
 	ctx := context.TODO()
-
-	// loading from the default config, other direct structs do not work here
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(env.Region),
-		config.WithCredentialsProvider(
-			credentials.NewStaticCredentialsProvider(env.Key, env.Secret, ""),
-		))
+	presigner, err := gc_middleware.InitS3Presigner(ctx)
 	if err != nil {
 		return "", err
 	}
-	// the s3 client from function
-	s3Client := s3.NewFromConfig(cfg)
-	// for presigning purposes we need a seperate presigning client
-	presignClient := s3.NewPresignClient(s3Client)
-	presigner := actions.Presigner{PresignClient: presignClient}
-	// details of the operation, the url and methods allowed
+
 	imageUploadDetails, err := presigner.PresignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket: &env.BucketName,
 		Key:    &fileName,
@@ -104,7 +91,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	fmt.Println(email, "is the email") // do SOME DB CALLS NOW
 
 	fileName := uuid.New()
-	putUrl, err := Initialize(fileName.String())
+	putUrl, err := GetSignedPutUrl(fileName.String())
 	if err != nil {
 		fmt.Println(err.Error())
 	}

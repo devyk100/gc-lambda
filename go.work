@@ -6,4 +6,5 @@ use (
 	./db
 	./env
 	./get-put-image-url
+	./middleware
 )

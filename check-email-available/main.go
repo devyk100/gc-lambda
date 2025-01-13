@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"log"
 
-	"gc.yashk.dev/db"
-	"gc.yashk.dev/env"
+	"gc.yashk.dev/gc_middleware"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IsEmailTaken struct {
@@ -24,7 +22,6 @@ type EmailCheckPayload struct {
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// creating contexts and loading the db url
 	ctx := context.Background()
-	dsn := env.DATABASE_URL
 
 	// unmarshalling the hjson from the request
 	var EmailCheckPayload EmailCheckPayload
@@ -32,16 +29,9 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		log.Println("Failed to unmarshal the JSON")
 	}
 
-	// pgx pool to connect to the db
 	var IsEmailTaken IsEmailTaken
-	config, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 500,
-		}, nil
-	}
-	pool, err := pgxpool.NewWithConfig(ctx, config)
+
+	queries, pool, err := gc_middleware.InitDb(ctx)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
@@ -49,9 +39,6 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 	defer pool.Close()
-
-	// the query client to run the queries
-	queries := db.New(pool)
 
 	_, err = queries.GetUserFromEmail(ctx, EmailCheckPayload.Email)
 	//error handling for this case
