@@ -3,8 +3,11 @@ module gc.yashk.dev/checkemail
 go 1.23.4
 
 require (
+	gc.yashk.dev/db v0.0.0-00010101000000-000000000000
+	gc.yashk.dev/env v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/jackc/pgx/v5 v5.7.2
+
 )
 
 require (
@@ -15,3 +18,7 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 )
+
+replace gc.yashk.dev/db => ../db
+
+replace gc.yashk.dev/env => ../env

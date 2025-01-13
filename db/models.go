@@ -7,57 +7,134 @@ package db
 import (
 	"database/sql/driver"
 	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AuthType string
+type AuthTypeT string
 
 const (
-	AuthTypeGoogle AuthType = "Google"
-	AuthTypeGithub AuthType = "Github"
-	AuthTypeEmail  AuthType = "Email"
+	AuthTypeTGoogle AuthTypeT = "Google"
+	AuthTypeTGithub AuthTypeT = "Github"
+	AuthTypeTEmail  AuthTypeT = "Email"
 )
 
-func (e *AuthType) Scan(src interface{}) error {
+func (e *AuthTypeT) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = AuthType(s)
+		*e = AuthTypeT(s)
 	case string:
-		*e = AuthType(s)
+		*e = AuthTypeT(s)
 	default:
-		return fmt.Errorf("unsupported scan type for AuthType: %T", src)
+		return fmt.Errorf("unsupported scan type for AuthTypeT: %T", src)
 	}
 	return nil
 }
 
-type NullAuthType struct {
-	AuthType AuthType
-	Valid    bool // Valid is true if AuthType is not NULL
+type NullAuthTypeT struct {
+	AuthTypeT AuthTypeT
+	Valid     bool // Valid is true if AuthTypeT is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthType) Scan(value interface{}) error {
+func (ns *NullAuthTypeT) Scan(value interface{}) error {
 	if value == nil {
-		ns.AuthType, ns.Valid = "", false
+		ns.AuthTypeT, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.AuthType.Scan(value)
+	return ns.AuthTypeT.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullAuthType) Value() (driver.Value, error) {
+func (ns NullAuthTypeT) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.AuthType), nil
+	return string(ns.AuthTypeT), nil
+}
+
+type Course struct {
+	ID          int32
+	Name        string
+	Language    string
+	Description string
+	IsPublic    bool
+}
+
+type CourseInstructorMapping struct {
+	ID         int32
+	Instructor int32
+	CourseID   int32
+}
+
+type CourseLearnerMapping struct {
+	ID       int32
+	Learner  int32
+	CourseID int32
+}
+
+type Image struct {
+	ID             int32
+	AssociatedUser int32
+	Filename       string
+	AssociatedPost int32
+	IsUploaded     bool
+}
+
+type LessonPost struct {
+	ID               int32
+	CreatedBy        string
+	Body             string
+	UserID           int32
+	Status           string
+	CreatedAt        pgtype.Timestamp
+	IsPublic         bool
+	AssociatedCourse int32
+}
+
+type LiveClass struct {
+	ID               int32
+	StartTime        pgtype.Timestamp
+	AssociatedCourse int32
+	Name             string
+	Description      string
+	ReminderMessage  string
+	IsPublic         bool
+}
+
+type OverrideLessonPostPermission struct {
+	ID            int32
+	AllowedEditor int32
+	AllowedPostID int32
+	Allowed       bool
+}
+
+type OverrideLessonPostVisibility struct {
+	ID            int32
+	AllowedUser   int32
+	AllowedPostID int32
+	Allowed       bool
+}
+
+type OverrideLiveClassAdminPermission struct {
+	ID          int32
+	Instructor  int32
+	LiveClassID int32
+}
+
+type OverrideLiveClassVisibility struct {
+	ID          int32
+	Learner     int32
+	LiveClassID int32
 }
 
 type User struct {
-	ID       string
+	ID       int32
 	Username string
 	Password string
 	Name     string
 	Email    string
 	Picture  string
-	AuthType AuthType
+	AuthType AuthTypeT
 }

@@ -134,11 +134,11 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        GetMethod:
+        PostMethod:
           Type: Api
           Properties:
             Path: /get-put-image-url
-            Method: GET
+            Method: POST
             RestApiId:
               Ref: ApiGatewayApi
         OptionsMethod:

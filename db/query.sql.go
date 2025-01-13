@@ -10,7 +10,7 @@ import (
 )
 
 const getUserFromEmail = `-- name: GetUserFromEmail :one
-SELECT id, username, password, name, email, picture, "authType" FROM "User"
+SELECT id, username, password, name, email, picture, auth_type FROM "User"
 WHERE email = $1 LIMIT 1
 `
 
@@ -30,7 +30,7 @@ func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (User, err
 }
 
 const getUserFromUsername = `-- name: GetUserFromUsername :one
-SELECT id, username, password, name, email, picture, "authType" FROM "User"
+SELECT id, username, password, name, email, picture, auth_type FROM "User"
 WHERE username = $1 LIMIT 1
 `
 
