@@ -69,14 +69,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 	var uploadImageFromUrlResponse UploadImageFromUrlResponse
-	// var greeting string
-	// sourceIP := request.RequestContext.Identity.SourceIP
 
-	// if sourceIP == "" {
-	// 	greeting = "Hello, world!\n"
-	// } else {
-	// 	greeting = fmt.Sprintf("Hello, %s!\n", sourceIP)
-	// }
 	url, err := UploadFromUrlToS3(uploadImageFromUrlRequest.Url)
 	uploadImageFromUrlResponse.Url = url
 	if err != nil {

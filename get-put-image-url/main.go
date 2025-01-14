@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -52,43 +51,26 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if err := json.Unmarshal([]byte(request.Body), &putImageUrlRequest); err != nil {
 		fmt.Println("Failed to unmarshal", err.Error())
 	}
-
-	// parsing and checking the user from this jwt
-	fmt.Println("The token is", putImageUrlRequest.Token)
-	t, err := jwt.Parse(putImageUrlRequest.Token, func(token *jwt.Token) (interface{}, error) {
-		secret := []byte(env.NEXTAUTH_SECRET)
-		return secret, nil
-	})
+	ctx := context.TODO()
+	queries, pool, err := gc_middleware.InitDb(ctx)
+	defer pool.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+
 	}
-	if !t.Valid {
-		fmt.Println("THE TOKEN WAS NOT VALIDATED MAN")
+	isAuthenticated, err := gc_middleware.JwtAuth(ctx, &putImageUrlRequest.Token, queries)
+	if err != nil {
 		return events.APIGatewayProxyResponse{
-			Body:       "",
 			StatusCode: 403,
+			Body:       string("you are not authenticated"),
 		}, nil
 	}
 
-	// make the database queries, to save this image's keys and all associate it with this user / email
-	claims, ok := t.Claims.(jwt.MapClaims)
-	if !ok {
-		fmt.Println("Could not parse claims")
+	if !isAuthenticated {
 		return events.APIGatewayProxyResponse{
-			Body:       "",
 			StatusCode: 403,
+			Body:       string("You are not authenticated"),
 		}, nil
 	}
-	email, emailExists := claims["email"].(string)
-	if !emailExists {
-		fmt.Println("Email claim not found")
-		return events.APIGatewayProxyResponse{
-			Body:       "",
-			StatusCode: 403,
-		}, nil
-	}
-
-	fmt.Println(email, "is the email") // do SOME DB CALLS NOW
 
 	fileName := uuid.New()
 	putUrl, err := GetSignedPutUrl(fileName.String())
