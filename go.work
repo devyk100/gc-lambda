@@ -7,5 +7,7 @@ use (
 	./env
 	./get-put-image-url
 	./middleware
+	./query-conf-auth
+	./query-conference
 	./upload-image-from-url
 )

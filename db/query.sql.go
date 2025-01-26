@@ -9,6 +9,67 @@ import (
 	"context"
 )
 
+const getLiveClassFromEmail = `-- name: GetLiveClassFromEmail :many
+SELECT id, start_time, associated_course, name, description, reminder_message, is_public, email, length, mod_password, password FROM "LiveClass"
+WHERE email = $1
+`
+
+func (q *Queries) GetLiveClassFromEmail(ctx context.Context, email string) ([]LiveClass, error) {
+	rows, err := q.db.Query(ctx, getLiveClassFromEmail, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LiveClass
+	for rows.Next() {
+		var i LiveClass
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartTime,
+			&i.AssociatedCourse,
+			&i.Name,
+			&i.Description,
+			&i.ReminderMessage,
+			&i.IsPublic,
+			&i.Email,
+			&i.Length,
+			&i.ModPassword,
+			&i.Password,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLiveClassFromId = `-- name: GetLiveClassFromId :one
+SELECT id, start_time, associated_course, name, description, reminder_message, is_public, email, length, mod_password, password FROM "LiveClass"
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetLiveClassFromId(ctx context.Context, id int32) (LiveClass, error) {
+	row := q.db.QueryRow(ctx, getLiveClassFromId, id)
+	var i LiveClass
+	err := row.Scan(
+		&i.ID,
+		&i.StartTime,
+		&i.AssociatedCourse,
+		&i.Name,
+		&i.Description,
+		&i.ReminderMessage,
+		&i.IsPublic,
+		&i.Email,
+		&i.Length,
+		&i.ModPassword,
+		&i.Password,
+	)
+	return i, err
+}
+
 const getUserFromEmail = `-- name: GetUserFromEmail :one
 SELECT id, username, password, name, email, picture, auth_type FROM "User"
 WHERE email = $1 LIMIT 1

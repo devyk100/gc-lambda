@@ -181,6 +181,64 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+  QueryConference:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: query-conference/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        PostMethod:
+          Type: Api
+          Properties:
+            Path: /conference
+            Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /conference
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+  QueryAuthConference:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: query-conf-auth/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        PostMethod:
+          Type: Api
+          Properties:
+            Path: /conf-auth
+            Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /conf-auth
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -236,9 +294,29 @@ Outputs:
     Description: "API Gateway endpoint URL for Prod environment for UploadImageFromUrl"
     Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/upload-image-from-url/"
   
-  UploadImageFromUrlArn:
+  QueryConferenceArn:
     Description: "Custom Lambda Function ARN"
-    Value: !GetAtt UploadImageFromUrl.Arn
+    Value: !GetAtt QueryConference.Arn
+
+  QueryConferenceAPI:
+    Description: "API Gateway endpoint URL for Prod environment for QueryConference"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conference/"
+  
+  QueryConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryConference.Arn
+  
+  QueryAuthConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryAuthConference.Arn
+
+  QueryAuthConferenceAPI:
+    Description: "API Gateway endpoint URL for Prod environment for QueryAuthConference"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conf-auth/"
+  
+  QueryAuthConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryAuthConference.Arn
   
   # CheckUserNameFunctionIamRole:
   #   Description: "Implicit IAM Role created for Custom Function"

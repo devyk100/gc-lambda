@@ -101,6 +101,10 @@ type LiveClass struct {
 	Description      string
 	ReminderMessage  string
 	IsPublic         bool
+	Email            string
+	Length           int32
+	ModPassword      string
+	Password         string
 }
 
 type OverrideLessonPostPermission struct {

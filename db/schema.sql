@@ -175,3 +175,9 @@ ALTER TABLE "OverrideLiveClassAdminPermission" ADD CONSTRAINT "OverrideLiveClass
 
 -- AddForeignKey
 ALTER TABLE "OverrideLiveClassAdminPermission" ADD CONSTRAINT "OverrideLiveClassAdminPermission_live_class_id_fkey" FOREIGN KEY ("live_class_id") REFERENCES "LiveClass"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+ALTER TABLE "LiveClass" ADD COLUMN     "email" TEXT NOT NULL,
+ADD COLUMN     "length" INTEGER NOT NULL,
+ADD COLUMN     "mod_password" TEXT NOT NULL,
+ADD COLUMN     "password" TEXT NOT NULL;
