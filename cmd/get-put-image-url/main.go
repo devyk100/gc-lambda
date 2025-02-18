@@ -52,12 +52,12 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		fmt.Println("Failed to unmarshal", err.Error())
 	}
 	ctx := context.TODO()
-	queries, pool, err := gc_middleware.InitDb(ctx)
+	queries, pool, err := middleware.InitDb(ctx)
 	defer pool.Close()
 	if err != nil {
 
 	}
-	isAuthenticated, err := gc_middleware.JwtAuth(ctx, &putImageUrlRequest.Token, queries)
+	isAuthenticated, err := middleware.JwtAuth(ctx, &putImageUrlRequest.Token, queries)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 403,
