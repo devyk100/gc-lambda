@@ -18,8 +18,8 @@ Resources:
       StageName: Prod
       Cors:
         AllowMethods: "'POST,OPTIONS,GET'"
-        AllowHeaders: "'X-Forwaded-For,Content-Type'"
-        AllowOrigin: "'http://localhost:3000'"
+        AllowHeaders: "'X-Forwaded-For,Content-Type,Authorization'"
+        AllowOrigin: "'*'"
         MaxAge: "'600'"
         AllowCredentials: true
   HelloWorldFunction:
@@ -70,7 +70,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/check-username-available/
+      CodeUri: cmd/registration/check-username-available/
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -100,7 +100,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/check-email-available
+      CodeUri: cmd/registration/check-email-available
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -130,7 +130,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/get-put-image-url/
+      CodeUri: cmd/image-handling/get-put-image-url/
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -159,7 +159,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/upload-image-from-url/
+      CodeUri: cmd/image-handling/upload-image-from-url/
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -188,7 +188,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/query-conference/
+      CodeUri: cmd/liveclass/query-conference/
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -217,7 +217,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: cmd/query-conf-auth/
+      CodeUri: cmd/liveclass/query-conf-auth/
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -240,6 +240,62 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+  ListAllCourses:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: cmd/course/list-course/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        PostMethod:
+          Type: Api
+          Properties:
+            Path: /list-courses
+            Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /list-courses
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+  GetCourse:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: cmd/course/course-info/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        PostMethod:
+          Type: Api
+          Properties:
+            Path: /get-course
+            Method: POST
+            RestApiId:
+              Ref: ApiGatewayApi
+        OptionsMethod:
+          Type: Api
+          Properties:
+            Path: /get-course
+            Method: OPTIONS
+            RestApiId:
+              Ref: ApiGatewayApi
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -255,25 +311,25 @@ Outputs:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldFunctionRole.Arn
 
-  # CustomFunctionAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for SomeOtherFunction"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/customfunction/"
+  CustomFunctionAPI:
+    Description: "API Gateway endpoint URL for Prod environment for SomeOtherFunction"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/customfunction/"
   
-  # CustomFunctionArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt SomeOtherFunction.Arn
+  CustomFunctionArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt SomeOtherFunction.Arn
   
-  # # CustomFunctionIamRole:
-  # #   Description: "Implicit IAM Role created for Custom Function"
-  # #   Value: !GetAtt SomeOtherFunctionRole.Arn
+  # CustomFunctionIamRole:
+  #   Description: "Implicit IAM Role created for Custom Function"
+  #   Value: !GetAtt SomeOtherFunctionRole.Arn
 
-  # CheckUserNameFunctionAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for CheckUserNameFunction"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
+  CheckUserNameFunctionAPI:
+    Description: "API Gateway endpoint URL for Prod environment for CheckUserNameFunction"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/username-available/"
   
-  # CheckUserNameFunctionArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt CheckUserNameFunction.Arn
+  CheckUserNameFunctionArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt CheckUserNameFunction.Arn
 
   CheckEmailFunctionAPI:
     Description: "API Gateway endpoint URL for Prod environment for CheckEmailFunction"
@@ -283,42 +339,61 @@ Outputs:
     Description: "Custom Lambda Function ARN"
     Value: !GetAtt CheckEmailFunction.Arn
   
-  # GetPutImageUrlAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for GetPutImageUrl"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get-put-image-url/"
+  GetPutImageUrlAPI:
+    Description: "API Gateway endpoint URL for Prod environment for GetPutImageUrl"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get-put-image-url/"
   
-  # GetPutImageUrlArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt GetPutImageUrl.Arn
+  GetPutImageUrlArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt GetPutImageUrl.Arn
 
-  # UploadImageFromUrlAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for UploadImageFromUrl"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/upload-image-from-url/"
+  UploadImageFromUrlAPI:
+    Description: "API Gateway endpoint URL for Prod environment for UploadImageFromUrl"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/upload-image-from-url/"
   
-  # QueryConferenceArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt QueryConference.Arn
+  QueryConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryConference.Arn
 
-  # QueryConferenceAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for QueryConference"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conference/"
+  QueryConferenceAPI:
+    Description: "API Gateway endpoint URL for Prod environment for QueryConference"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conference/"
   
-  # QueryConferenceArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt QueryConference.Arn
+  QueryConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryConference.Arn
   
-  # QueryAuthConferenceArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt QueryAuthConference.Arn
+  QueryAuthConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryAuthConference.Arn
 
-  # QueryAuthConferenceAPI:
-  #   Description: "API Gateway endpoint URL for Prod environment for QueryAuthConference"
-  #   Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conf-auth/"
+  ListAllCoursesAPI:
+    Description: "API Gateway endpoint URL for Prod environment for ListAllCourses"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conference/"
   
-  # QueryAuthConferenceArn:
-  #   Description: "Custom Lambda Function ARN"
-  #   Value: !GetAtt QueryAuthConference.Arn
+  ListAllCoursesArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt ListAllCourses.Arn
+  GetCoursesAPI:
+    Description: "API Gateway endpoint URL for Prod environment for GetCourses"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conference/"
   
-  # # CheckUserNameFunctionIamRole:
-  # #   Description: "Implicit IAM Role created for Custom Function"
-  #   Value: !GetAtt CheckUserNameFunction.Arn
+  GetCoursesArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt GetCourses.Arn
+  
+  QueryAuthConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryAuthConference.Arn
+
+  QueryAuthConferenceAPI:
+    Description: "API Gateway endpoint URL for Prod environment for QueryAuthConference"
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/conf-auth/"
+  
+  QueryAuthConferenceArn:
+    Description: "Custom Lambda Function ARN"
+    Value: !GetAtt QueryAuthConference.Arn
+  
+  # CheckUserNameFunctionIamRole:
+  #   Description: "Implicit IAM Role created for Custom Function"
+    Value: !GetAtt CheckUserNameFunction.Arn

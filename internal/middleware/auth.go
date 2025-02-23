@@ -2,14 +2,32 @@ package middleware
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"gc.yashk.dev/lambda/internal/db"
 	"gc.yashk.dev/lambda/internal/env"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/golang-jwt/jwt"
 )
 
-func JwtAuth(ctx context.Context, token *string, queries *db.Queries) (bool, error) {
-	t, err := jwt.Parse(*token, func(token *jwt.Token) (interface{}, error) {
+func JwtAuth(ctx context.Context, request *events.APIGatewayProxyRequest, queries *db.Queries) (bool, error) {
+	authHeader, exists := request.Headers["Authorization"]
+	if !exists {
+		return false, nil
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		fmt.Println("Invalid Authorization header format")
+		return false, nil
+	}
+
+	bearerType := parts[0]
+	fmt.Println("Bearer Type:", bearerType)
+
+	token := parts[1]
+
+	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		secret := []byte(env.NEXTAUTH_SECRET)
 		return secret, nil
 	})

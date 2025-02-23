@@ -9,6 +9,244 @@ import (
 	"context"
 )
 
+const getAllCourses = `-- name: GetAllCourses :many
+SELECT 
+    c.id, 
+    c.name, 
+    c.language, 
+    c.description, 
+    c.is_public, 
+    c.img_url, 
+    c.uid, 
+    u.id AS user_id, 
+    u.username, 
+    u.name AS user_name, 
+    u.email, 
+    u.picture,
+    GREATEST(
+        similarity(c.language, $4), 
+        similarity(u.username, $4), 
+        similarity(u.name, $4), 
+        similarity(c.name, $4)
+    ) AS relevance
+FROM "Course" c
+JOIN "User" u ON c.uid = u.id
+WHERE c.is_public = $1
+AND (
+    $4 IS NULL OR $4 = '' -- If no search term, don't filter
+    OR similarity(c.language, $4) > 0.2
+    OR similarity(u.username, $4) > 0.2
+    OR similarity(u.name, $4) > 0.2
+    OR similarity(c.name, $4) > 0.2
+)
+ORDER BY 
+    CASE WHEN $5 = 'asc' THEN c.id END ASC,
+    CASE WHEN $5 = 'desc' THEN c.id END DESC,
+    relevance DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetAllCoursesParams struct {
+	IsPublic   bool
+	Limit      int32
+	Offset     int32
+	Similarity string
+	Column5    interface{}
+}
+
+type GetAllCoursesRow struct {
+	ID          int32
+	Name        string
+	Language    string
+	Description string
+	IsPublic    bool
+	ImgUrl      string
+	Uid         int32
+	UserID      int32
+	Username    string
+	UserName    string
+	Email       string
+	Picture     string
+	Relevance   interface{}
+}
+
+func (q *Queries) GetAllCourses(ctx context.Context, arg GetAllCoursesParams) ([]GetAllCoursesRow, error) {
+	rows, err := q.db.Query(ctx, getAllCourses,
+		arg.IsPublic,
+		arg.Limit,
+		arg.Offset,
+		arg.Similarity,
+		arg.Column5,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllCoursesRow
+	for rows.Next() {
+		var i GetAllCoursesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Language,
+			&i.Description,
+			&i.IsPublic,
+			&i.ImgUrl,
+			&i.Uid,
+			&i.UserID,
+			&i.Username,
+			&i.UserName,
+			&i.Email,
+			&i.Picture,
+			&i.Relevance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllLessons = `-- name: GetAllLessons :many
+SELECT 
+    l.id, 
+    l.title, 
+    l.body, 
+    l.is_public, 
+    l.user_id, 
+    u.id AS user_id, 
+    u.username, 
+    u.name AS user_name, 
+    u.email, 
+    u.picture,
+    GREATEST(
+        similarity(l.language, $4), 
+        similarity(u.username, $4), 
+        similarity(u.name, $4), 
+        similarity(l.title, $4)
+    ) AS relevance
+FROM "LessonPost" l
+JOIN "User" u ON l.uid = u.id
+WHERE l.is_public = $1
+AND (
+    $4 IS NULL OR $4 = '' -- No filtering if search term is empty
+    OR similarity(l.language, $4) > 0.2 
+    OR similarity(u.username, $4) > 0.2
+    OR similarity(u.name, $4) > 0.2
+    OR similarity(l.title, $4) > 0.2
+)
+ORDER BY 
+    CASE WHEN $5 = 'asc' THEN l.id END ASC,
+    CASE WHEN $5 = 'desc' THEN l.id END DESC,
+    relevance DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetAllLessonsParams struct {
+	IsPublic   bool
+	Limit      int32
+	Offset     int32
+	Similarity string
+	Column5    interface{}
+}
+
+type GetAllLessonsRow struct {
+	ID        int32
+	Title     string
+	Body      string
+	IsPublic  bool
+	UserID    int32
+	UserID_2  int32
+	Username  string
+	UserName  string
+	Email     string
+	Picture   string
+	Relevance interface{}
+}
+
+func (q *Queries) GetAllLessons(ctx context.Context, arg GetAllLessonsParams) ([]GetAllLessonsRow, error) {
+	rows, err := q.db.Query(ctx, getAllLessons,
+		arg.IsPublic,
+		arg.Limit,
+		arg.Offset,
+		arg.Similarity,
+		arg.Column5,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllLessonsRow
+	for rows.Next() {
+		var i GetAllLessonsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Body,
+			&i.IsPublic,
+			&i.UserID,
+			&i.UserID_2,
+			&i.Username,
+			&i.UserName,
+			&i.Email,
+			&i.Picture,
+			&i.Relevance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCourse = `-- name: GetCourse :one
+SELECT 
+    c.id, c.name, c.language, c.description, c.is_public, c.img_url, c.uid, 
+    u.id AS user_id, 
+    u.name AS user_name, 
+    u.picture AS user_picture
+FROM "Course" c
+INNER JOIN "User" u ON c.uid = u.id
+WHERE c.id = $1
+`
+
+type GetCourseRow struct {
+	ID          int32
+	Name        string
+	Language    string
+	Description string
+	IsPublic    bool
+	ImgUrl      string
+	Uid         int32
+	UserID      int32
+	UserName    string
+	UserPicture string
+}
+
+func (q *Queries) GetCourse(ctx context.Context, id int32) (GetCourseRow, error) {
+	row := q.db.QueryRow(ctx, getCourse, id)
+	var i GetCourseRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Language,
+		&i.Description,
+		&i.IsPublic,
+		&i.ImgUrl,
+		&i.Uid,
+		&i.UserID,
+		&i.UserName,
+		&i.UserPicture,
+	)
+	return i, err
+}
+
 const getLiveClassFromEmail = `-- name: GetLiveClassFromEmail :many
 SELECT id, start_time, associated_course, name, description, reminder_message, is_public, email, length, mod_password, password FROM "LiveClass"
 WHERE email = $1
@@ -71,7 +309,7 @@ func (q *Queries) GetLiveClassFromId(ctx context.Context, id int32) (LiveClass, 
 }
 
 const getUserFromEmail = `-- name: GetUserFromEmail :one
-SELECT id, username, password, name, email, picture, auth_type FROM "User"
+SELECT id, username, password, name, email, picture, auth_type, description, is_public FROM "User"
 WHERE email = $1 LIMIT 1
 `
 
@@ -86,12 +324,14 @@ func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (User, err
 		&i.Email,
 		&i.Picture,
 		&i.AuthType,
+		&i.Description,
+		&i.IsPublic,
 	)
 	return i, err
 }
 
 const getUserFromUsername = `-- name: GetUserFromUsername :one
-SELECT id, username, password, name, email, picture, auth_type FROM "User"
+SELECT id, username, password, name, email, picture, auth_type, description, is_public FROM "User"
 WHERE username = $1 LIMIT 1
 `
 
@@ -106,6 +346,8 @@ func (q *Queries) GetUserFromUsername(ctx context.Context, username string) (Use
 		&i.Email,
 		&i.Picture,
 		&i.AuthType,
+		&i.Description,
+		&i.IsPublic,
 	)
 	return i, err
 }

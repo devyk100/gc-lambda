@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"gc.yashk.dev/lambda/internal/env"
+	"gc.yashk.dev/lambda/internal/macros"
 	"gc.yashk.dev/lambda/internal/middleware"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -18,8 +19,7 @@ import (
 )
 
 type UploadImageFromUrlRequest struct {
-	Token string `json:"token"`
-	Url   string `json:"url"`
+	Url string `json:"url"`
 }
 
 type UploadImageFromUrlResponse struct {
@@ -83,6 +83,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	return events.APIGatewayProxyResponse{
 		Body:       string(body),
 		StatusCode: 200,
+		Headers:    macros.CorsHeaders,
 	}, nil
 }
 

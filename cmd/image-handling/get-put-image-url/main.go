@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gc.yashk.dev/lambda/internal/env"
+	"gc.yashk.dev/lambda/internal/macros"
 	"gc.yashk.dev/lambda/internal/middleware"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -57,7 +58,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if err != nil {
 
 	}
-	isAuthenticated, err := middleware.JwtAuth(ctx, &putImageUrlRequest.Token, queries)
+	isAuthenticated, err := middleware.JwtAuth(ctx, &request, queries)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 403,
@@ -84,10 +85,11 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if err != nil {
 		fmt.Println("error", err.Error())
 	}
-
+	fmt.Println("Successfully created a response body for get put image url")
 	return events.APIGatewayProxyResponse{
 		Body:       string(responseBody),
 		StatusCode: 200,
+		Headers:    macros.CorsHeaders,
 	}, nil
 }
 

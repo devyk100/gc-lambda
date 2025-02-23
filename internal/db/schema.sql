@@ -181,3 +181,58 @@ ALTER TABLE "LiveClass" ADD COLUMN     "email" TEXT NOT NULL,
 ADD COLUMN     "length" INTEGER NOT NULL,
 ADD COLUMN     "mod_password" TEXT NOT NULL,
 ADD COLUMN     "password" TEXT NOT NULL;
+
+/*
+  Warnings:
+
+  - Added the required column `img_url` to the `Course` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `uid` to the `Course` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "Course" ADD COLUMN     "img_url" TEXT NOT NULL,
+ADD COLUMN     "uid" INTEGER NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Course" ADD CONSTRAINT "Course_uid_fkey" FOREIGN KEY ("uid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "description" TEXT NOT NULL DEFAULT 'User of GengoConnect',
+ADD COLUMN     "is_public" BOOLEAN NOT NULL DEFAULT true;
+/*
+  Warnings:
+
+  - You are about to drop the column `created_by` on the `LessonPost` table. All the data in the column will be lost.
+
+*/
+-- DropForeignKey
+ALTER TABLE "LessonPost" DROP CONSTRAINT "LessonPost_associated_course_fkey";
+
+-- AlterTable
+ALTER TABLE "LessonPost" DROP COLUMN "created_by",
+ALTER COLUMN "associated_course" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "LessonPost" ADD CONSTRAINT "LessonPost_associated_course_fkey" FOREIGN KEY ("associated_course") REFERENCES "Course"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+/*
+  Warnings:
+
+  - You are about to drop the column `status` on the `LessonPost` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE "LessonPost" DROP COLUMN "status";
+
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+
+/*
+  Warnings:
+
+  - Added the required column `title` to the `LessonPost` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "LessonPost" ADD COLUMN     "title" TEXT NOT NULL;

@@ -60,6 +60,8 @@ type Course struct {
 	Language    string
 	Description string
 	IsPublic    bool
+	ImgUrl      string
+	Uid         int32
 }
 
 type CourseInstructorMapping struct {
@@ -84,13 +86,12 @@ type Image struct {
 
 type LessonPost struct {
 	ID               int32
-	CreatedBy        string
 	Body             string
 	UserID           int32
-	Status           string
 	CreatedAt        pgtype.Timestamp
 	IsPublic         bool
-	AssociatedCourse int32
+	AssociatedCourse pgtype.Int4
+	Title            string
 }
 
 type LiveClass struct {
@@ -134,11 +135,13 @@ type OverrideLiveClassVisibility struct {
 }
 
 type User struct {
-	ID       int32
-	Username string
-	Password string
-	Name     string
-	Email    string
-	Picture  string
-	AuthType AuthTypeT
+	ID          int32
+	Username    string
+	Password    string
+	Name        string
+	Email       string
+	Picture     string
+	AuthType    AuthTypeT
+	Description string
+	IsPublic    bool
 }
